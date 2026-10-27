@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Secure X – Lock, Print, Delete</title>
+<style>
+:root{--bg:#faf8f6;--card:#ffffff;--tx:#111318;--mut:#5b6068;--ac:#ff6a0d;--ok:#d9560a;--bad:#b91c1c;--bd:#e6e2dd;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+
+
+
+*{box-sizing:border-box}
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,select{-webkit-user-select:auto;user-select:auto}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+.w{max-width:1000px;margin:0 auto;padding:16px;position:relative}
+h1{font-size:1.5rem;margin:8px 0 2px;color:var(--ac)}h2{font-size:1.1rem;margin:0 0 10px}
+.sub{color:var(--mut);margin:0 0 12px}
+.um{position:absolute;top:16px;left:16px;z-index:20}
+.av{display:flex;align-items:center;gap:6px;background:none;border:0;padding:0;cursor:pointer;color:var(--tx)}
+.av .ci{width:52px;height:52px;border-radius:50%;background:#f4ebe2;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center}
+.tabs{position:absolute;top:62px;left:0;width:204px;background:#fff;border-radius:16px;padding:8px;box-shadow:0 8px 30px rgba(0,0,0,.12);border:1px solid var(--bd);display:flex;flex-direction:column;gap:4px;margin:0}
+.tabs button{display:flex;align-items:center;gap:12px;padding:12px 14px;border:0;border-radius:10px;background:none;color:var(--tx);font-size:1rem;cursor:pointer;text-align:left;width:100%}
+.tabs button.on{background:var(--ac);color:#fff}
+.tabs svg{width:22px;height:22px;flex:none}
+.c{background:var(--card);border:1px solid #efece8;border-radius:18px;padding:28px 32px;margin-bottom:16px;box-shadow:0 4px 24px rgba(0,0,0,.05)}
+.c>h2{font-size:1.45rem}
+label{display:block;font-weight:600;margin:8px 0 4px;font-size:.85rem}
+input,select{width:100%;padding:16px 18px;border-radius:14px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:1.05rem}
+.btn{display:block;padding:19px 18px;border:0;border-radius:14px;background:var(--ac);color:#fff;font-weight:700;font-size:1.2rem;cursor:pointer;width:100%;margin-top:20px}
+.btn.g{background:var(--ok)}.btn.r{background:var(--bad)}.btn.o{background:transparent;color:var(--ac);border:1px solid var(--ac)}.btn:disabled{opacity:.5}
+.btn.s{padding:8px 12px;font-size:.88rem;width:auto;margin:0}
+.drop{display:block;border:2px dashed var(--ac);border-radius:16px;padding:58px 22px;text-align:center;cursor:pointer;color:var(--ac);font-weight:700;font-size:1.25rem;margin:14px 0 0}
+.drop small{display:block;margin-top:8px;color:var(--mut);font-size:1rem!important}
+.code{font-size:1.9rem;letter-spacing:.25em;font-weight:800;color:var(--ac);text-align:center}
+.pill{display:inline-block;padding:2px 10px;margin:2px;border-radius:99px;font-size:.78rem;font-weight:700;border:1px solid var(--bd)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.row{display:flex;gap:10px;align-items:center;border:1px solid var(--bd);border-radius:12px;padding:8px;margin-top:8px;flex-wrap:wrap}
+.th{width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--bd);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex:none;touch-action:none}
+.th img{width:100%;height:100%;object-fit:cover;filter:blur(10px);transform:scale(1.15);pointer-events:none;-webkit-user-drag:none}
+.th.rv img{filter:none;transform:none}
+.th.hv img{filter:blur(14px) saturate(.5)}
+.rb{flex:1;min-width:180px}
+.rb .nm{font-weight:600;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+.ctl{display:grid;grid-template-columns:2fr 70px 1fr;gap:6px;margin-top:4px}
+.bulk{display:grid;grid-template-columns:2fr 70px 1fr auto;gap:6px;margin-top:10px;align-items:end}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-top:8px}
+.rc{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;word-break:break-all;color:var(--mut)}
+ul.s{padding-left:18px;margin:6px 0;color:var(--mut);font-size:.92rem}
+.note{font-size:.82rem;color:var(--mut);border-left:3px solid var(--ac);padding-left:10px;margin-top:10px}
+.hide{display:none!important}
+.row input,.row select,.bulk input,.bulk select{padding:9px;font-size:.95rem;border-radius:10px}
+#cnt{background:#f3f0ed;border:0;color:var(--tx);font-size:.95rem;padding:6px 16px;margin-left:10px;vertical-align:middle}
+label[for=t]{font-size:1.1rem;margin:26px 0 10px}
+.lg{margin:8px 0 10px!important}
+.intro{text-align:center;font-size:1.15rem;max-width:760px;margin:6px auto 26px}
+@media(max-width:640px){.lg{margin-top:64px!important}.c{padding:20px 16px}.drop{padding:40px 14px}}
+#sh{position:fixed;inset:0;background:#000;color:#fff;z-index:99;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:1.1rem}
+#sh.on{display:flex}
+@media print{body>*{display:none!important}}
+@media(max-width:520px){.bulk{grid-template-columns:1fr 1fr}.ctl{grid-template-columns:1fr 60px}}
+</style>
+</head>
+<body>
+<div id="sh">🛡️ Screen protected<br>Content is hidden while the app is not in focus.<br>Tap to resume.</div>
+<div class="w" id="app">
+<div class="um"><button class="av" id="avb" aria-label="Switch view" aria-expanded="true"><span class="ci"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+<div class="tabs" id="menu"><button id="tc" class="on"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5z"/></svg>Customer</button><button id="ts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M4 9 5.5 4h13L20 9v1a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0zM5 12v8h14v-8M10 20v-4h4v4"/></svg>Shopkeeper</button><button id="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>History</button></div></div>
+<h1 class="lg"><svg viewBox="0 0 380 112" role="img" aria-label="Secure X: Lock, Print, Delete" style="width:min(100%,460px);height:auto;display:block;margin:0 auto"><path d="M14 28a6 6 0 0 1 6-6h24l10 12h42a8 8 0 0 1 8 8v42a8 8 0 0 1-8 8H20a6 6 0 0 1-6-6Z" fill="none" style="stroke:var(--tx)" stroke-width="6" stroke-linejoin="round"/><path d="M80 62v-8a10 10 0 0 1 20 0v8" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M80 62v-8a10 10 0 0 1 20 0v8" fill="none" style="stroke:var(--ac)" stroke-width="6" stroke-linecap="round"/><rect x="72" y="62" width="36" height="34" rx="7" style="fill:var(--ac)"/><circle cx="90" cy="76" r="4.5" fill="#fff"/><rect x="87.8" y="78" width="4.4" height="11" rx="2" fill="#fff"/><text x="126" y="68" font-size="46" font-weight="700" font-family="Poppins,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif" style="fill:var(--tx)">Secure <tspan style="fill:var(--ac)">X</tspan></text><text x="128" y="94" font-size="12" font-weight="500" font-family="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif" textLength="214" lengthAdjust="spacing" style="fill:var(--mut)">LOCK • PRINT • DELETE</text></svg></h1>
+<p class="sub intro">Print anything. Leave nothing behind. Files are encrypted, shown blurred to the shop, and destroyed after printing.</p>
+
+<section id="cust">
+<div class="c">
+<h2>1. Add your documents <span class="pill" id="cnt">0 / 150</span></h2>
+<label class="drop" for="f">＋ Tap to add documents or photos<br><small style="font-weight:400">Aadhaar, PAN, statements… up to 150 per order</small></label>
+<input type="file" id="f" class="hide" multiple accept="image/*,application/pdf">
+<div class="sub" id="pg" style="margin-top:8px"></div>
+<div id="bulkbar" class="hide">
+ <div class="bulk">
+  <div><label>All sizes</label><select id="bs"></select></div>
+  <div><label>Copies</label><input id="bc" type="number" min="1" max="99" value="1"></div>
+  <div><label>Mode</label><select id="bm"><option>B&amp;W</option><option>Colour</option></select></div>
+  <button class="btn o s" id="ba">Apply to all</button>
+ </div>
+ <div class="note" style="margin-top:8px">Press &amp; hold a thumbnail to peek. Tap ✕ to remove a wrong document.</div>
+</div>
+<div id="cart"></div>
+<label for="t">Auto-delete if not printed in</label>
+<select id="t"><option value="5">5 minutes</option><option value="15" selected>15 minutes</option><option value="60">1 hour</option><option value="240">4 hours</option></select>
+<button class="btn" id="go" disabled>🔒 Encrypt &amp; send to shop</button>
+</div>
+<div id="orders"></div>
+</section>
+
+<section id="hist" class="hide">
+<div class="c"><h2>🕘 Print history</h2>
+<p class="sub">Every document printed or auto-deleted, with the time, shop and shopkeeper. Stored only on this device. Contents of documents are never saved.</p>
+<div class="sub" id="hm"></div><h2 style="margin-top:6px">🧾 Bills</h2><div id="bl"></div><h2 style="margin-top:16px">🖨️ Printed documents</h2><div id="hl"></div>
+<button class="btn r s" id="hc" style="margin-top:12px">🗑️ Clear history</button></div>
+</section>
+
+<section id="shop" class="hide">
+<div class="c" id="login"><h2>🔐 Shopkeeper login</h2><p class="sub">One-time login. Once confirmed, details can be changed only with an OTP sent to your mobile. You can’t see or print any customer order until you register.</p>
+<label for="sn">Shop name</label><input id="sn" maxlength="40" autocomplete="off" placeholder="e.g. Sai Xerox &amp; Prints">
+<label for="sa">Shop address</label><input id="sa" maxlength="120" autocomplete="off" placeholder="Shop no., street, area, city, PIN">
+<label for="kn">Shopkeeper name</label><input id="kn" maxlength="40" autocomplete="off" placeholder="Your name">
+<label for="mb">Mobile number</label><input id="mb" type="tel" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="10-digit mobile number">
+<button class="btn" id="lg">🔐 Register &amp; log in</button><div class="sub bad" id="le" style="margin-top:8px"></div></div>
+<div id="shopmain" class="hide">
+<div class="c"><h2>Print queue</h2>
+<p class="sub" style="margin:0">You only ever see tiny, heavily blurred previews. Printing is one-time. Printing is locked until the customer gives you their secret code. Files are erased the moment printing finishes.</p></div><div class="c"><h2>🏪 <span id="sname"></span></h2><div class="sub" id="saddr" style="margin:0"></div><div class="sub" style="margin:0">👤 <span id="kname"></span> · 📱 <span id="mname"></span></div><div class="pill" style="margin-top:8px">🔒 Details locked · change only with mobile OTP</div> <button class="btn o s" id="ch" style="margin-top:8px">✏️ Wrong details? Change</button>
+<div id="chg" class="hide" style="margin-top:12px"></div></div><div class="c"><h2>🔑 Customer code</h2><input id="uc" maxlength="6" autocomplete="off" placeholder="Enter 6-character code" style="text-transform:uppercase;letter-spacing:.2em;font-weight:700"><button class="btn" id="ub">🔓 Unlock to print</button><div class="sub" id="um" style="margin-top:8px"></div></div>
+<div id="q"></div></div>
+</section>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const G=[
+['Photo & ID',[['Passport 35×45 mm',35,45],['Stamp 25×30 mm',25,30],['2×2 in',50.8,50.8],['3×3 in',76.2,76.2],['3.5×5 in',89,127],['4×4 in',101.6,101.6],['4×6 in',101.6,152.4],['5×5 in',127,127],['5×7 in',127,178],['6×8 in',152.4,203.2],['8×10 in',203.2,254],['8×12 in',203.2,304.8],['10×12 in',254,304.8],['12×15 in',304.8,381],['12×18 in',304.8,457.2],['16×20 in',406.4,508],['20×24 in',508,609.6],['24×36 in',609.6,914.4]]],
+['ISO A series',[['A0',841,1189],['A1',594,841],['A2',420,594],['A3',297,420],['A4',210,297],['A5',148,210],['A6',105,148],['A7',74,105]]],
+['ISO B series',[['B3',353,500],['B4',250,353],['B5',176,250]]],
+['US / Indian',[['Letter',215.9,279.4],['Legal',215.9,355.6],['Tabloid',279.4,431.8],['Executive',184.1,266.7],['Foolscap',203,330],['Postcard',100,148],['Visiting card',89,51]]]
+];
+const F=[];let opt='';G.forEach(g=>{opt+='<optgroup label="'+g[0]+'">';g[1].forEach(s=>{opt+='<option value="'+F.length+'">'+s[0]+'</option>';F.push(s)});opt+='</optgroup>'});
+const A4=F.findIndex(s=>s[0]==='A4');
+const optSel=v=>opt.replace('value="'+v+'"','value="'+v+'" selected');
+$('#bs').innerHTML=optSel(A4);
+const MAX=150;let cart=[],orders=[],uid=0,onum=0;const pins=new Map();
+let hist=[];try{hist=JSON.parse(localStorage.getItem('sx_h')||'[]')}catch(e){}
+const saveH=()=>{try{localStorage.setItem('sx_h',JSON.stringify(hist))}catch(e){}};
+let bills=[];try{bills=JSON.parse(localStorage.getItem('sx_b')||'[]')}catch(e){}
+const saveB=()=>{try{localStorage.setItem('sx_b',JSON.stringify(bills))}catch(e){}};
+const shopInfo={};try{Object.assign(shopInfo,JSON.parse(localStorage.getItem('sx_s')||'{}'))}catch(e){}
+const derive=async(c,salt)=>crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:300000,hash:'SHA-256'},await crypto.subtle.importKey('raw',new TextEncoder().encode(c),'PBKDF2',false,['deriveKey']),{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const code=()=>{const a=new Uint8Array(6);crypto.getRandomValues(a);return [...a].map(x=>'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[x%31]).join('')};
+const fmt=ms=>{ms=Math.max(0,ms/1000|0);const h=ms/3600|0,m=(ms%3600)/60|0;return (h?h+'h ':'')+m+'m '+String(ms%60).padStart(2,'0')+'s'};
+
+function tab(v){[['c','#cust','#tc'],['s','#shop','#ts'],['h','#hist','#tb']].forEach(a=>{$(a[1]).classList.toggle('hide',a[0]!==v);$(a[2]).classList.toggle('on',a[0]===v)});renderShop();if(v==='h')renderHist()}
+$('#tc').onclick=()=>tab('c');$('#ts').onclick=()=>tab('s');$('#tb').onclick=()=>tab('h');
+
+function thumbs(file){return new Promise(res=>{
+ if(!file.type.startsWith('image/'))return res([null,null]);
+ const u=URL.createObjectURL(file),i=new Image();
+ i.onload=()=>{const mk=n=>{const c=document.createElement('canvas'),r=n/Math.max(i.width,i.height);c.width=Math.max(1,i.width*r|0);c.height=Math.max(1,i.height*r|0);c.getContext('2d').drawImage(i,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.5)};
+  const r=[mk(160),mk(32)];URL.revokeObjectURL(u);res(r)};
+ i.onerror=()=>{URL.revokeObjectURL(u);res([null,null])};i.src=u})}
+
+$('#f').onchange=async e=>{
+ const fl=[...e.target.files];let skip=0;
+ for(let k=0;k<fl.length;k++){
+  const f=fl[k];
+  if(cart.length>=MAX){skip+=fl.length-k;break}
+  if(!(f.type.startsWith('image/')||f.type==='application/pdf')||f.size>15e6){skip++;continue}
+  $('#pg').textContent='Adding '+(k+1)+' / '+fl.length+'…';
+  const [b,s]=await thumbs(f);
+  cart.push({id:++uid,file:f,name:f.name,th:b,ths:s,copies:1,mode:'B&W',size:A4});
+ }
+ $('#pg').textContent=skip?skip+' file(s) skipped (unsupported, over 15 MB, or limit reached).':'';
+ e.target.value='';renderCart()};
+
+function renderCart(){
+ $('#cnt').textContent=cart.length+' / '+MAX;
+ $('#bulkbar').classList.toggle('hide',!cart.length);
+ $('#go').disabled=!cart.length;
+ $('#go').textContent=cart.length?'🔒 Encrypt & send '+cart.length+' document'+(cart.length>1?'s':'')+' to shop':'🔒 Encrypt & send to shop';
+ $('#cart').innerHTML=cart.map(d=>'<div class="row" data-id="'+d.id+'"><div class="th pk">'+(d.th?'<img alt="" draggable="false" src="'+d.th+'">':'📄')+'</div><div class="rb"><div class="nm">'+esc(d.name)+'</div><div class="ctl"><select class="sz">'+optSel(d.size)+'</select><input class="cp" type="number" min="1" max="99" value="'+d.copies+'"><select class="md"><option'+(d.mode==='B&W'?' selected':'')+'>B&amp;W</option><option'+(d.mode==='Colour'?' selected':'')+'>Colour</option></select></div></div><button class="btn r s x">✕ Remove</button></div>').join('')}
+
+$('#cart').addEventListener('change',e=>{const r=e.target.closest('.row');if(!r)return;const d=cart.find(x=>x.id==r.dataset.id);if(!d)return;
+ if(e.target.classList.contains('sz'))d.size=+e.target.value;
+ if(e.target.classList.contains('cp')){d.copies=Math.max(1,Math.min(99,+e.target.value||1));e.target.value=d.copies}
+ if(e.target.classList.contains('md'))d.mode=e.target.value});
+$('#cart').addEventListener('click',e=>{if(e.target.classList.contains('x')){const r=e.target.closest('.row');cart=cart.filter(x=>x.id!=r.dataset.id);renderCart()}});
+$('#cart').addEventListener('pointerdown',e=>{const t=e.target.closest('.pk');if(t)t.classList.add('rv')});
+['pointerup','pointercancel','contextmenu','blur'].forEach(ev=>window.addEventListener(ev,()=>document.querySelectorAll('.rv').forEach(x=>x.classList.remove('rv'))));
+$('#ba').onclick=()=>{const s=+$('#bs').value,c=Math.max(1,Math.min(99,+$('#bc').value||1)),m=$('#bm').value;cart.forEach(d=>{d.size=s;d.copies=c;d.mode=m});renderCart()};
+
+$('#go').onclick=async()=>{
+ if(!cart.length)return;$('#go').disabled=true;
+ $('#pg').textContent='Securing order…';const pin=code(),salt=crypto.getRandomValues(new Uint8Array(16)),mk=await derive(pin,salt),civ=crypto.getRandomValues(new Uint8Array(12));const o={n:++onum,salt,chk:{iv:civ,ct:await crypto.subtle.encrypt({name:'AES-GCM',iv:civ},mk,new TextEncoder().encode('ok'))},key:null,unlocked:false,exp:Date.now()+(+$('#t').value)*60000,docs:[],held:{},rcp:''};pins.set(o,pin);
+ try{
+  for(let k=0;k<cart.length;k++){
+   const d=cart[k];$('#pg').textContent='Encrypting '+(k+1)+' / '+cart.length+'…';
+   const key=mk;
+   const iv=crypto.getRandomValues(new Uint8Array(12));
+   const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,await d.file.arrayBuffer());
+   const j={id:d.id,o,type:d.file.type,copies:d.copies,mode:d.mode,size:d.size,cipher,iv,th:d.ths,status:'waiting',busy:false,fp:hex(await crypto.subtle.digest('SHA-256',cipher)).slice(0,16)};
+   o.docs.push(j);o.held[d.id]=d;
+  }
+  orders.push(o);cart=[];$('#pg').textContent='';
+ }catch(e){$('#pg').textContent='Encryption failed: '+e.message;o.docs.forEach(j=>{j.cipher=j.key=null})}
+ renderCart();renderOrders();renderShop()};
+
+function cnt(o){const c={waiting:0,printed:0,expired:0,recalled:0};o.docs.forEach(d=>c[d.status]++);return c}
+
+function wipe(d,why){
+ d.cipher=d.key=d.iv=d.th=null;d.status=why;d.busy=false;
+ const o=d.o;const hd=o.held&&o.held[d.id];d.nm=hd?hd.name:'Document';d.pt=Date.now();
+ if(why==='printed'||why==='expired'){hist.unshift({t:Date.now(),name:hd?hd.name:'Document',size:F[d.size][0],copies:d.copies,mode:d.mode,shop:why==='printed'?o.shop:'',keeper:why==='printed'?o.keeper:'',addr:why==='printed'?o.addr:'',mob:why==='printed'?o.mob:'',st:why});if(hist.length>500)hist.length=500;saveH()}
+ if(o.held)delete o.held[d.id];
+ if(!cnt(o).waiting){o.held=null;o.key=null;o.unlocked=false;
+  const fps=o.docs.map(x=>x.fp).join('');
+  crypto.subtle.digest('SHA-256',new TextEncoder().encode(fps)).then(h=>{o.rcp=hex(h);renderOrders()})}
+ renderOrders();renderShop()}
+
+function renderOrders(){
+ $('#orders').innerHTML=orders.map((o,i)=>{const c=cnt(o);
+  return '<div class="c"><div class="sub" style="margin:0">Order #'+o.n+' · your secret print code. Press &amp; hold to reveal. Tell it to the shopkeeper only at the counter.</div><div class="code pin" data-oi="'+i+'">••••••</div><div style="text-align:center;margin-top:6px">'+
+  (c.waiting?'<span class="pill">⏳ '+c.waiting+' waiting · wipes in <span data-exp="'+o.exp+'">'+fmt(o.exp-Date.now())+'</span></span>':'')+
+  (c.printed?'<span class="pill ok">✅ '+c.printed+' printed &amp; deleted</span>':'')+
+  (c.expired?'<span class="pill bad">🗑️ '+c.expired+' expired &amp; deleted</span>':'')+
+  (c.recalled?'<span class="pill">↩️ '+c.recalled+' recalled</span>':'')+'</div>'+
+  (o.rcp?'<div class="rc" style="margin-top:8px">Deletion receipt · SHA-256: '+o.rcp+' · keys destroyed ✔</div>':'')+
+  (o.rcp?'<button class="btn" data-rcp="'+i+'">⬇️ Download receipt (PDF)</button>'+(o.bill?'<button class="btn o" data-dl="'+o.bill.no+'">⬇️ Download bill '+o.bill.no+'</button>':''):'')+(c.waiting?'<button class="btn o" data-recall="'+i+'">↩️ Back: recall order &amp; edit</button>':'')+'</div>'}).reverse().join('')}
+
+$('#orders').addEventListener('click',e=>{const i=e.target.dataset.recall;if(i===undefined)return;
+ const o=orders[+i];if(!e.target.dataset.arm){const b=e.target,t=b.textContent;b.dataset.arm=1;b.textContent='⚠️ Tap again to confirm recall';setTimeout(()=>{delete b.dataset.arm;b.textContent=t},4000);return}
+ o.docs.filter(d=>d.status==='waiting'&&!d.busy).forEach(d=>{const h=o.held&&o.held[d.id];if(h)cart.push(h);wipe(d,'recalled')});
+ orders=orders.filter(x=>x.docs.some(d=>d.status!=='recalled'));
+ renderCart();renderOrders();renderShop()});
+
+document.addEventListener('pointerdown',e=>{const p=e.target.closest('.pin');if(p)p.textContent=pins.get(orders[+p.dataset.oi])||'••••••'});
+['pointerup','pointercancel','blur'].forEach(ev=>window.addEventListener(ev,()=>document.querySelectorAll('.pin').forEach(p=>p.textContent='••••••')));
+let fails=0,lockUntil=0;
+$('#ub').onclick=async()=>{
+ const m=$('#um');if(Date.now()<lockUntil){m.textContent='Too many wrong tries. Wait '+Math.ceil((lockUntil-Date.now())/1000)+'s.';return}
+ if(!shop){m.textContent='Please log in first.';return}const sn=shop.s,kn=shop.k,sa=shop.a,mb=shop.m;
+ 
+ const c=$('#uc').value.trim().toUpperCase();if(c.length!==6){m.textContent='Enter the 6-character code.';return}
+ m.textContent='Checking…';let hit=false;
+ for(const o of orders.filter(x=>!x.unlocked&&cnt(x).waiting)){
+  try{const k=await derive(c,o.salt);const p=await crypto.subtle.decrypt({name:'AES-GCM',iv:o.chk.iv},k,o.chk.ct);if(new TextDecoder().decode(p)==='ok'){o.key=k;o.unlocked=true;o.shop=sn;o.keeper=kn;o.addr=sa;o.mob=mb;hit=true}}catch(e){}
+ }
+ if(hit){fails=0;m.textContent='✅ Unlocked. You can print now.';$('#uc').value=''}
+ else{fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0;m.textContent='Too many wrong tries. Locked for 30 s.'}else m.textContent='❌ Wrong code ('+(5-fails)+' tries left).'}
+ renderShop()};
+const AREA=210*297;
+const defRate=(si,m)=>{const s=F[si],f=Math.max(.5,(s[1]*s[2])/AREA);return Math.max(1,Math.round((m==='Colour'?10:2)*f*2)/2)};
+const inr=n=>'₹'+(Math.round((+n||0)*100)/100).toFixed(2);
+const rateOf=(o,x)=>o.rates&&o.rates[x.i]!=null?o.rates[x.i]:defRate(x.d.size,x.d.mode);
+const printedItems=o=>{const r=[];o.docs.forEach((d,i)=>{if(d.status==='printed')r.push({i,d})});return r};
+const billTotal=o=>printedItems(o).reduce((a,x)=>a+rateOf(o,x)*x.d.copies,0);
+const say=t=>{$('#hm').textContent=t;$('#um').textContent=t;$('#pg').textContent=t};
+function billHTML(o){
+ const p=printedItems(o);
+ if(o.bill)return '<div class="note" style="margin:10px 0">🧾 Bill <b>'+o.bill.no+'</b> saved to customer history · '+inr(o.bill.total)+' <button class="btn o s" data-dl="'+o.bill.no+'" style="margin-left:6px">⬇️ Download</button></div>';
+ if(!p.length)return '';
+ if(!o.billing)return '<button class="btn o" data-bill="'+o.n+'">🧾 Generate bill ('+p.length+' printed)</button>';
+ return '<div class="c" style="margin:10px 0 0;background:var(--bg)"><h2>🧾 Bill</h2>'+p.map(x=>'<div class="row" style="margin-top:6px"><div class="rb" style="min-width:0"><b>Doc #'+(x.i+1)+'</b> <small>'+F[x.d.size][0]+' · '+x.d.copies+'× · '+x.d.mode+'</small></div><div style="width:130px"><small>Rate ₹/page</small><input class="br" data-i="'+x.i+'" data-o="'+o.n+'" type="number" min="0" step="0.5" value="'+rateOf(o,x)+'"></div><b class="ba" style="width:80px;text-align:right">'+inr(rateOf(o,x)*x.d.copies)+'</b></div>').join('')+'<div style="text-align:right;margin-top:10px;font-size:1.1rem"><b>Total <span class="bt">'+inr(billTotal(o))+'</span></b></div><button class="btn g" data-save="'+o.n+'">💾 Save bill to history</button></div>'}
+function saveBill(o){
+ if(!shop||o.bill)return;
+ const it=printedItems(o).map(x=>{const r=rateOf(o,x);return{label:x.d.nm||'Doc #'+(x.i+1),pt:x.d.pt||null,size:F[x.d.size][0],copies:x.d.copies,mode:x.d.mode,rate:r,amt:r*x.d.copies}});
+ if(!it.length)return;const t=new Date();
+ const b={no:'SX'+String(t.getFullYear()).slice(2)+String(t.getMonth()+1).padStart(2,'0')+String(t.getDate()).padStart(2,'0')+'-'+(crypto.getRandomValues(new Uint16Array(1))[0]%9000+1000),t:t.getTime(),shop:shop.s,addr:shop.a,mob:shop.m,keeper:shop.k,items:it,total:it.reduce((a,x)=>a+x.amt,0)};
+ bills.unshift(b);if(bills.length>300)bills.length=300;saveB();o.bill=b;o.billing=false;renderShop()}
+function billTxt(b){return [b.shop,b.addr,'Mobile: '+b.mob,'Shopkeeper: '+b.keeper,'Bill no: '+b.no,'Date: '+new Date(b.t).toLocaleString('en-GB'),''].concat((b.items||[]).map(x=>x.label+' | '+(x.pt?new Date(x.pt).toLocaleString('en-GB'):'-')+' | '+x.size+' | '+x.mode+' | '+x.copies+' x Rs.'+x.rate+' = Rs.'+(+x.amt).toFixed(2)),['','TOTAL: Rs.'+(+b.total).toFixed(2)]).join('\n')}
+function billPDF(b){
+ const J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
+ const d=new J({unit:'mm',format:'a4'}),X=[15,58,92,115,138,160,195];let y=18;
+ const T=(t,x,o)=>d.text(String(t),x,y,o);
+ d.setFont('helvetica','bold');d.setFontSize(18);T(b.shop,15);y+=7;
+ d.setFont('helvetica','normal');d.setFontSize(10);
+ d.splitTextToSize(String(b.addr),150).forEach(l=>{T(l,15);y+=5});
+ T('Mobile: '+b.mob+'    Shopkeeper: '+b.keeper,15);y+=9;
+ d.setFont('helvetica','bold');d.setFontSize(13);T('BILL / RECEIPT',15);d.setFontSize(10);T('Bill no: '+b.no,195,{align:'right'});y+=5;
+ d.setFont('helvetica','normal');T('Date: '+new Date(b.t).toLocaleString('en-GB'),195,{align:'right'});y+=5;
+ d.line(15,y,195,y);y+=6;
+ d.setFont('helvetica','bold');T('Item',X[0]);T('Printed',X[1]);T('Size',X[2]);T('Mode',X[3]);T('Copies',X[4]);T('Rate',X[5]);T('Amount',X[6],{align:'right'});y+=2;d.line(15,y,195,y);y+=6;
+ d.setFont('helvetica','normal');
+ (b.items||[]).forEach(x=>{if(y>270){d.addPage();y=20}T(String(x.label).length>20?String(x.label).slice(0,19)+'...':x.label,X[0]);T(x.pt?new Date(x.pt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'-',X[1]);T(x.size,X[2]);T(x.mode,X[3]);T(x.copies,X[4]);T('Rs. '+(+x.rate).toFixed(2),X[5]);T('Rs. '+(+x.amt).toFixed(2),X[6],{align:'right'});y+=6});
+ y+=2;d.line(15,y,195,y);y+=7;d.setFont('helvetica','bold');d.setFontSize(12);T('TOTAL',X[5]);T('Rs. '+(+b.total).toFixed(2),X[6],{align:'right'});y+=14;
+ d.setFont('helvetica','normal');d.setFontSize(9);T('Your documents were encrypted and permanently deleted after printing. Thank you!  - SecureX',15);
+ return d.output('blob')}
+function receiptPDF(o){
+ const J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
+ const d=new J({unit:'mm',format:'a4'});let y=20;const T=(t,x,op)=>d.text(String(t),x,y,op);
+ d.setFont('helvetica','bold');d.setFontSize(18);T('SecureX - Deletion Receipt',15);y+=9;
+ d.setFont('helvetica','normal');d.setFontSize(10);T('Order #'+o.n,15);T('Generated: '+new Date().toLocaleString('en-GB'),195,{align:'right'});y+=6;
+ if(o.shop){T('Shop: '+o.shop+'    Shopkeeper: '+(o.keeper||'-'),15);y+=6;d.splitTextToSize('Address: '+(o.addr||'-'),175).forEach(l=>{T(l,15);y+=5})}
+ y+=1;d.line(15,y,195,y);y+=6;
+ d.setFont('helvetica','bold');T('Doc',15);T('Size',30);T('Copies',90);T('Mode',115);T('Status',150);y+=2;d.line(15,y,195,y);y+=6;
+ d.setFont('helvetica','normal');
+ o.docs.forEach((x,i)=>{if(y>270){d.addPage();y=20}T('#'+(i+1),15);T(F[x.size][0],30);T(x.copies,90);T(x.mode,115);T(x.status+' & deleted',150);y+=6});
+ y+=2;d.line(15,y,195,y);y+=7;T('Receipt hash (SHA-256):',15);y+=5;
+ d.setFont('courier','normal');d.setFontSize(8);d.splitTextToSize(String(o.rcp),175).forEach(l=>{T(l,15);y+=4});y+=4;
+ d.setFont('helvetica','normal');d.setFontSize(9);T('All files were encrypted and permanently deleted. Encryption keys destroyed. - SecureX',15);
+ return d.output('blob')}
+function receiptTxt(o){return ['SecureX - Deletion Receipt','Order #'+o.n,'Generated: '+new Date().toLocaleString('en-GB'),o.shop?'Shop: '+o.shop+' | '+(o.addr||''):''].concat(o.docs.map((x,i)=>'#'+(i+1)+' | '+F[x.size][0]+' | '+x.copies+'x | '+x.mode+' | '+x.status+' & deleted'),['','SHA-256: '+o.rcp,'Keys destroyed.']).join('\n')}
+async function downloadReceipt(o){
+ try{
+  const pdf=receiptPDF(o),f=pdf?{n:'receipt-order-'+o.n+'.pdf',d:pdf}:{n:'receipt-order-'+o.n+'.txt',d:new Blob([receiptTxt(o)],{type:'text/plain'})};
+  const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+  if(dl)await dl.save({filename:f.n,data:f.d});
+  else{const a=document.createElement('a');a.href=URL.createObjectURL(f.d);a.download=f.n;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+  say('✅ Receipt ready: '+f.n)
+ }catch(e){say(e&&e.code==='declined'?'Download cancelled.':'Could not download the receipt ('+((e&&e.code)||'error')+').')}}
+$('#orders').addEventListener('click',e=>{const t=e.target.dataset;
+ if(t.rcp!==undefined){const o=orders[+t.rcp];if(o&&o.rcp)downloadReceipt(o)}
+ if(t.dl){const b=bills.find(x=>x.no===t.dl);if(b)downloadBill(b)}});
+async function downloadBill(b){
+ try{
+  const pdf=billPDF(b),f=pdf?{n:'bill-'+b.no+'.pdf',d:pdf}:{n:'bill-'+b.no+'.txt',d:new Blob([billTxt(b)],{type:'text/plain'})};
+  const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
+  if(dl)await dl.save({filename:f.n,data:f.d});
+  else{const a=document.createElement('a');a.href=URL.createObjectURL(f.d);a.download=f.n;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+  say('✅ Bill ready: '+f.n)
+ }catch(e){say(e&&e.code==='declined'?'Download cancelled.':'Could not download the bill ('+((e&&e.code)||'error')+').')}}
+function renderBills(){$('#bl').innerHTML=bills.length?bills.map(b=>'<div class="row"><div class="th">🧾</div><div class="rb"><div class="nm">'+esc(b.no)+' · '+inr(b.total)+'</div><small>🏪 '+esc(b.shop)+'</small><br><small>🕒 '+esc(new Date(b.t).toLocaleString('en-GB'))+' · '+((b.items||[]).length)+' item(s)</small><br><small>📄 '+esc((b.items||[]).map(x=>x.label).join(', '))+'</small></div><button class="btn s" data-dl="'+esc(b.no)+'">⬇️ Download</button></div>').join(''):'<p class="sub">No bills yet. The shop generates one after printing.</p>'}
+$('#bl').addEventListener('click',e=>{const n=e.target.dataset.dl;if(n){const b=bills.find(x=>x.no===n);if(b)downloadBill(b)}});
+function renderShop(){
+ if($('#shop').classList.contains('hide'))return;
+ $('#q').innerHTML=orders.length?'':'<div class="c"><p class="sub" style="margin:0">No jobs yet. Switch to “customer” and send one.</p></div>';
+ orders.slice().reverse().forEach(o=>{
+  const c=cnt(o),u=o.unlocked,w=u?o.docs.filter(d=>d.status==='waiting'&&!d.busy):[];
+  const el=document.createElement('div');el.className='c';
+  el.innerHTML='<h2>Order #'+o.n+' <span class="pill">'+o.docs.length+' doc'+(o.docs.length>1?'s':'')+'</span>'+(c.waiting?(u?' <span class="pill ok">🔓 unlocked</span>':' <span class="pill bad">🔒 locked · needs customer code</span>')+' <span class="pill">wipes in <span data-exp="'+o.exp+'">'+fmt(o.exp-Date.now())+'</span></span>':' <span class="pill ok">all deleted</span>')+'</h2>'+
+  (w.length?'<button class="btn g" data-all="'+o.n+'">🖨️ Print all '+w.length+' &amp; auto-delete</button>':'')+
+  billHTML(o)+'<div class="grid">'+o.docs.map((d,i)=>{const live=d.status==='waiting',s=F[d.size];
+   return '<div class="row" style="margin-top:0"><div class="th hv">'+(live&&d.th?'<img alt="" draggable="false" src="'+d.th+'">':live?'📄':'🗑️')+'</div><div class="rb" style="min-width:0"><b>#'+(i+1)+'</b> <small>'+(live?s[0]+' · '+d.copies+'× · '+d.mode:d.status+' · deleted')+'</small>'+
+   (live&&u&&!d.busy?'<br><button class="btn g s" data-doc="'+o.n+':'+i+'" style="margin-top:4px">🖨️ Print</button>':d.busy?'<br><small>printing…</small>':'')+'</div></div>'}).join('')+'</div>';
+  $('#q').appendChild(el)})}
+
+$('#q').addEventListener('click',e=>{
+ const a=e.target.dataset.all,dd=e.target.dataset.doc;
+ if(a){const o=orders.find(x=>x.n==a);if(o)printDocs(o.docs)}
+ if(dd){const [id,i]=dd.split(':');const o=orders.find(x=>x.n==id);if(o)printDocs([o.docs[+i]])}});
+
+$('#q').addEventListener('click',e=>{
+ const t=e.target,n=t.dataset;
+ if(n.bill){const o=orders.find(x=>x.n==n.bill);if(o){o.billing=true;renderShop()}}
+ if(n.save){const o=orders.find(x=>x.n==n.save);if(o)saveBill(o)}
+ if(n.dl){const b=bills.find(x=>x.no===n.dl);if(b)downloadBill(b)}});
+$('#q').addEventListener('input',e=>{
+ const t=e.target;if(!t.classList.contains('br'))return;
+ const o=orders.find(x=>x.n==t.dataset.o);if(!o)return;
+ o.rates=o.rates||{};o.rates[t.dataset.i]=Math.max(0,+t.value||0);
+ t.closest('.row').querySelector('.ba').textContent=inr(o.rates[t.dataset.i]*o.docs[+t.dataset.i].copies);
+ t.closest('.c').querySelector('.bt').textContent=inr(billTotal(o))});
+async function printDocs(ds){
+ if(!shop)return;ds=ds.filter(d=>d.status==='waiting'&&!d.busy);if(!ds.length)return;
+ ds.forEach(d=>d.busy=true);renderShop();
+ const im=ds.filter(d=>d.type.startsWith('image/')),pf=ds.filter(d=>!d.type.startsWith('image/'));
+ if(im.length)await runPrint(im);
+ for(const p of pf)await runPrint([p])}
+
+function runPrint(ds){return new Promise(async res=>{
+ const urls=[];
+ try{for(const d of ds)urls.push(URL.createObjectURL(new Blob([await crypto.subtle.decrypt({name:'AES-GCM',iv:d.iv},d.o.key,d.cipher)],{type:d.type})))}
+ catch(e){$('#um').textContent='Could not decrypt. Job may already be wiped.';ds.forEach(d=>d.busy=false);return res()}
+ const fr=document.createElement('iframe');fr.style.cssText='position:fixed;left:-9999px;top:0;width:800px;height:1100px;border:0';
+ let done=0;
+ const fin=()=>{if(done)return;done=1;window.removeEventListener('afterprint',fin);urls.forEach(u=>URL.revokeObjectURL(u));fr.remove();ds.forEach(d=>wipe(d,'printed'));res()};
+ if(!ds[0].type.startsWith('image/')){
+  fr.src=urls[0];
+  fr.onload=()=>setTimeout(()=>{try{fr.contentWindow.focus();fr.contentWindow.print()}catch(e){window.open(urls[0])}setTimeout(fin,60000)},800);
+ }else{
+  let css='@page{margin:0}html,body{margin:0}.pg{break-after:page;overflow:hidden;display:flex}.pg img{width:100%;height:100%;object-fit:contain}',b='';
+  const seen={};
+  ds.forEach((d,i)=>{const s=F[d.size];
+   if(!seen[d.size]){seen[d.size]=1;css+='@page p'+d.size+'{size:'+s[1]+'mm '+s[2]+'mm;margin:0}.p'+d.size+'{page:p'+d.size+';width:'+s[1]+'mm;height:'+s[2]+'mm}'}
+   for(let c=0;c<d.copies;c++)b+='<div class="pg p'+d.size+'"><img src="'+urls[i]+'"'+(d.mode==='B&W'?' style="filter:grayscale(1)"':'')+'></div>'});
+  fr.srcdoc='<!doctype html><style>'+css+'</style>'+b;
+  fr.onload=async()=>{const w=fr.contentWindow;
+   await Promise.all([...w.document.images].map(im=>im.complete?1:new Promise(r=>{im.onload=im.onerror=r})));
+   w.onafterprint=fin;w.focus();try{w.print()}catch(e){done=1;window.removeEventListener('afterprint',fin);urls.forEach(u=>URL.revokeObjectURL(u));fr.remove();ds.forEach(d=>d.busy=false);renderShop();$('#um').textContent='⚠️ Printing is blocked in this view. Open the page in its own browser tab and try again.';return res()}setTimeout(fin,60000)};
+ }
+ window.addEventListener('afterprint',fin);document.body.appendChild(fr)})}
+
+setInterval(()=>{
+ orders.forEach(o=>{if(Date.now()>o.exp)o.docs.filter(d=>d.status==='waiting'&&!d.busy).forEach(d=>wipe(d,'expired'))});
+ document.querySelectorAll('[data-exp]').forEach(s=>s.textContent=fmt(+s.dataset.exp-Date.now()))},1000);
+
+$('#sn').value=shopInfo.s||'';$('#sa').value=shopInfo.a||'';$('#kn').value=shopInfo.k||'';$('#mb').value=shopInfo.m||'';$('#mb').oninput=e=>{e.target.value=e.target.value.replace(/\D/g,'')};
+let shop=null;
+function showShop(){$('#login').classList.toggle('hide',!!shop);$('#shopmain').classList.toggle('hide',!shop);if(shop){$('#sname').textContent=shop.s;$('#saddr').textContent='📍 '+shop.a;$('#kname').textContent=shop.k;$('#mname').textContent=shop.m}renderShop()}
+$('#lg').onclick=()=>{const s=$('#sn').value.trim(),a=$('#sa').value.trim(),k=$('#kn').value.trim(),m=$('#mb').value.replace(/\D/g,'');
+ if(s.length<2||a.length<8||k.length<2||!/^[6-9]\d{9}$/.test(m)){$('#le').textContent='Enter a valid shop name, the full shop address (at least 8 characters), your name and a 10-digit mobile number.';return}
+ const b=$('#lg');if(!b.dataset.arm){b.dataset.arm=1;b.textContent='⚠️ Check carefully. Changing later needs a mobile OTP. Tap again to confirm';clearTimeout(b._t);b._t=setTimeout(()=>{delete b.dataset.arm;b.textContent='🔐 Register & log in'},5000);return}
+ clearTimeout(b._t);shopInfo.reg=1;shop={s,a,k,m};shopInfo.s=s;shopInfo.a=a;shopInfo.k=k;shopInfo.m=m;try{localStorage.setItem('sx_s',JSON.stringify(shopInfo))}catch(e){}$('#le').textContent='';showShop()};
+if(shopInfo.reg&&shopInfo.s&&shopInfo.a&&shopInfo.k&&shopInfo.m){shop={s:shopInfo.s,a:shopInfo.a,k:shopInfo.k,m:shopInfo.m};showShop()}
+function renderHist(){
+ renderBills();const p=hist.filter(h=>h.st==='printed').length;
+ $('#hl').innerHTML=hist.length?'<div class="sub" style="margin:0">'+p+' printed · '+(hist.length-p)+' expired unprinted</div>'+hist.map(h=>{const dt=new Date(h.t),pr=h.st==='printed';return '<div class="row"><div class="th">'+(pr?'✅':'🗑️')+'</div><div class="rb"><div class="nm">'+esc(h.name)+'</div><small>'+esc(h.size)+' · '+(+h.copies||1)+'× · '+esc(h.mode)+'</small><br><small>🕒 '+esc(dt.toLocaleDateString()+' '+dt.toLocaleTimeString())+'</small><br><small>'+(pr?'🏪 '+esc(h.shop||'—')+' · 👤 '+esc(h.keeper||'—')+(h.addr?'<br><small>📍 '+esc(h.addr)+'</small>':'')+(h.mob?'<br><small>📱 XXXXXX'+esc(String(h.mob).slice(-4))+'</small>':''):'Expired before printing · deleted')+'</small></div></div>'}).join(''):'<p class="sub">No printed documents yet.</p>'}
+$('#hc').onclick=e=>{const b=e.currentTarget;
+ if(!b.dataset.arm){b.dataset.arm=1;b.textContent='⚠️ Tap again to permanently delete';clearTimeout(b._t);b._t=setTimeout(()=>{delete b.dataset.arm;b.textContent='🗑️ Clear history'},4000);return}
+ clearTimeout(b._t);delete b.dataset.arm;hist=[];
+ bills=[];try{localStorage.setItem('sx_h','[]');localStorage.removeItem('sx_h');localStorage.setItem('sx_b','[]');localStorage.removeItem('sx_b')}catch(_){}
+ b.textContent='✅ History permanently deleted';setTimeout(()=>{b.textContent='🗑️ Clear history'},2500);renderHist()};
+/* Change details via mobile OTP */
+let cg=null;
+const sms=()=>{cg.otp=String(crypto.getRandomValues(new Uint32Array(1))[0]%900000+100000);cg.exp=Date.now()+300000;cg.tries=0;cg.last=Date.now()};
+function otpStatus(){
+ const t='+91 XXXXXX'+esc(String(cg.mob).slice(-4));
+ if(!cg.dd)return '📲 Sending OTP to '+t+'…';
+ if(cg.ok)return '📲 OTP sent to '+t+'. Check your phone’s notifications. Valid for 5 minutes.';
+ return '⚠️ Couldn’t deliver the OTP to '+t+'. Notifications are blocked here and real SMS needs a server.<br><button class="btn o s" id="otpp" style="margin-top:8px">🎬 Presenter: press &amp; hold to peek</button> <b id="otpk" style="letter-spacing:.2em;margin-left:8px"></b>'}
+async function deliver(){
+ try{
+  if(!('Notification' in window))return false;
+  let p=Notification.permission;if(p==='default')p=await Notification.requestPermission();
+  if(p!=='granted')return false;
+  new Notification('SecureX',{body:'Your SecureX OTP is '+cg.otp+'. Valid for 5 minutes. Do not share it.'});return true
+ }catch(e){return false}}
+const send=()=>{sms();renderChg();deliver().then(ok=>{if(!cg)return;cg.dd=1;cg.ok=ok;const e=$('#otps');if(e)e.innerHTML=otpStatus()})};
+$('#ch').onclick=()=>{cg={step:'otp',mob:shop.m};send()};
+function renderChg(){
+ const p=$('#chg');
+ if(!cg){p.classList.add('hide');p.innerHTML='';$('#ch').classList.remove('hide');return}
+ p.classList.remove('hide');$('#ch').classList.add('hide');
+ if(cg.step==='edit'){
+  p.innerHTML='<div class="note" style="margin:0 0 8px">✅ Mobile verified. Edit your details below. Changing the mobile number needs a second OTP on the new number.</div>'+
+  '<label for="ce-n">Shop name</label><input id="ce-n" maxlength="40" value="'+esc(shop.s)+'">'+
+  '<label for="ce-a">Shop address</label><input id="ce-a" maxlength="120" value="'+esc(shop.a)+'">'+
+  '<label for="ce-k">Shopkeeper name</label><input id="ce-k" maxlength="40" value="'+esc(shop.k)+'">'+
+  '<label for="ce-m">Mobile number</label><input id="ce-m" type="tel" inputmode="numeric" maxlength="10" value="'+esc(shop.m)+'">'+
+  '<button class="btn" id="cs">💾 Save changes</button> <button class="btn o" id="cc">Cancel</button><div class="sub bad" id="cem" style="margin-top:8px"></div>';return}
+ p.innerHTML='<div class="note" id="otps" style="margin:0 0 8px">'+otpStatus()+'</div>'+
+  '<label for="otpi">'+(cg.step==='otp2'?'Enter the OTP sent to your NEW number':'Enter the OTP sent to your registered number')+'</label><input id="otpi" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="6-digit OTP">'+
+  '<button class="btn" id="otpv">✅ Verify OTP</button> <button class="btn o s" id="otpr" style="margin-top:8px">Resend OTP</button> <button class="btn o s" id="otpc" style="margin-top:8px">Cancel</button><div class="sub bad" id="otpm" style="margin-top:8px"></div>'}
+function applyDetails(d){
+ shop={s:d.s,a:d.a,k:d.k,m:d.m};Object.assign(shopInfo,{s:d.s,a:d.a,k:d.k,m:d.m,reg:1});
+ try{localStorage.setItem('sx_s',JSON.stringify(shopInfo))}catch(e){}
+ orders.forEach(o=>{if(o.unlocked){o.shop=d.s;o.addr=d.a;o.keeper=d.k;o.mob=d.m}});
+ cg=null;renderChg();showShop();say('✅ Details updated.')}
+$('#chg').addEventListener('click',e=>{
+ const id=e.target.id;if(!cg||!id)return;
+ const m=t=>{const x=$('#otpm')||$('#cem');if(x)x.textContent=t};
+ if(id==='otpc'||id==='cc'){cg=null;renderChg()}
+ if(id==='otpr'){const w=30-Math.floor((Date.now()-cg.last)/1000);if(w>0){m('Please wait '+w+'s before resending.');return}send()}
+ if(id==='otpv'){
+  const v=($('#otpi').value||'').replace(/\D/g,'');
+  if(!cg.otp){m('OTP is no longer valid. Tap Resend OTP.');return}
+  if(Date.now()>cg.exp){cg.otp=null;m('OTP expired. Tap Resend OTP.');return}
+  if(v!==cg.otp){cg.tries++;if(cg.tries>=3){cg.otp=null;m('Too many wrong tries. Tap Resend OTP.')}else m('❌ Wrong OTP ('+(3-cg.tries)+' tries left).');return}
+  if(cg.step==='otp'){cg.step='edit';renderChg()}else applyDetails(cg.draft)}
+ if(id==='cs'){
+  const s=$('#ce-n').value.trim(),a=$('#ce-a').value.trim(),k=$('#ce-k').value.trim(),mb=$('#ce-m').value.replace(/\D/g,'');
+  if(s.length<2||a.length<8||k.length<2||!/^[6-9]\d{9}$/.test(mb)){m('Enter a valid shop name, address (8+ characters), your name and a 10-digit mobile number.');return}
+  const d={s,a,k,m:mb};
+  if(mb!==shop.m){cg={step:'otp2',mob:mb,draft:d};send()}else applyDetails(d)}});
+$('#chg').addEventListener('pointerdown',e=>{if(e.target.id==='otpp'&&cg&&cg.otp)$('#otpk').textContent=cg.otp});
+['pointerup','pointercancel','blur'].forEach(ev=>window.addEventListener(ev,()=>{const k=$('#otpk');if(k)k.textContent=''}));
+/* Screen shield */
+const sh=$('#sh'),on=()=>sh.classList.add('on'),off=()=>{if(!document.hidden)sh.classList.remove('on')};
+window.addEventListener('blur',on);window.addEventListener('focus',off);sh.onclick=()=>{sh.classList.remove('on');window.focus()};
+document.addEventListener('visibilitychange',()=>document.hidden?on():off());
+window.addEventListener('pagehide',on);
+const kill=e=>{on();try{navigator.clipboard.writeText('Protected by SecureX')}catch(_){}e.preventDefault()};
+document.addEventListener('keydown',e=>{const k=e.key;
+ if(k==='PrintScreen'||k==='Snapshot'||((e.metaKey||e.ctrlKey)&&e.shiftKey&&/^[345sS]$/.test(k))||((e.ctrlKey||e.metaKey)&&/^[psPS]$/.test(k)))kill(e)});
+document.addEventListener('keyup',e=>{if(e.key==='PrintScreen')kill(e)});
+['contextmenu','dragstart','copy','cut'].forEach(ev=>document.addEventListener(ev,e=>{if(!/INPUT|SELECT/.test(e.target.tagName))e.preventDefault()}));
+window.addEventListener('beforeunload',()=>orders.forEach(o=>o.docs.forEach(d=>{d.cipher=d.key=null})));
+renderCart();
+(()=>{const m=$('#menu'),b=$('#avb'),set=o=>{m.classList.toggle('hide',!o);b.setAttribute('aria-expanded',o)};b.onclick=e=>{e.stopPropagation();set(m.classList.contains('hide'))};m.addEventListener('click',()=>set(false));document.addEventListener('click',e=>{if(!e.target.closest('.um'))set(false)})})();
+})();
+</script>
+</body>
+</html>
